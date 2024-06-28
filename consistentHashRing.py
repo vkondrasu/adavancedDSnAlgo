@@ -29,6 +29,50 @@ class HashRing:
                     return temp
                 return temp.next
 
+    def addNode(self, hashValue):
+        if self.legalRange(hashValue):
+            newNode = Node(hashValue)
+
+            if self.head is None:
+                newNode.next = newNode
+                newNode.previous = newNode
+                self.head = newNode
+            else:
+                temp = self.lookupNode(hashValue)
+                newNode.next = temp
+                newNode.previous = temp.previous
+                newNode.previous.next = newNode
+                newNode.next.previous = newNode
+
+                self.moveResources(newNode, newNode.next, False)
+                if hashValue < self.head.hashValue:
+                    self.head = newNode
+
+    def addResource(self, hashValueResource, value):
+        if self.legalRange(hashValueResource):
+            targetNode = self.lookupNode(hashValueResource)
+            if targetNode is not None:
+                targetNode.resource[hashValueResource] = value
+            else:
+                print("Can't add a resource to an empty string")
+
+    def removeNode(self, hashValue):
+        temp = self.lookupNode(hashValue)
+        if temp.hashValue == hashValue:
+            self.moveResources(temp.next, temp, True)
+            temp.previous.next = temp.next
+            temp.next.previous = temp.previous
+
+            if self.head.hashValue == hashValue:
+                self.head = temp.next
+
+                if self.head == self.head.next:
+                    self.head = None
+
+            return temp.next
+        else:
+            print("Nothing to remove")
+
     def moveResources(self, dest, orig, deleteTrue):
         delete_list = []
         for i,j in orig.resource.items():
